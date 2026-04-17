@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ComplaintController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,4 +28,13 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::apiResource('complaints', ComplaintController::class);
+    Route::post('complaints/{complaint}/assign', [ComplaintController::class, 'assign']);
+
+    Route::apiResource('complaints.comments', CommentController::class)
+        ->only(['index', 'store'])
+        ->shallow();
+
+    Route::post('complaints/{complaint}/attachments', [AttachmentController::class, 'store']);
+    Route::get('attachments/{attachment}', [AttachmentController::class, 'show']);
+    Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy']);
 });
