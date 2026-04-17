@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(composer require *)",
-      "Bash(php artisan *)"
+      "Bash(php artisan *)",
+      "Bash(curl -sf -o /dev/null http://127.0.0.1:8765/up)",
+      "Bash(lsof -iTCP:3306 -sTCP:LISTEN -n -P)"
     ],
     "additionalDirectories": [
       "/Users/rahul/.claude/projects/-Users-rahul-grievance-system"

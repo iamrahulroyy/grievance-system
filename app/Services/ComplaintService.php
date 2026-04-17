@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\ComplaintStatus;
 use App\Models\Complaint;
+use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
 class ComplaintService
@@ -11,11 +12,12 @@ class ComplaintService
     /**
      * @param  array{title: string, description: string}  $data
      */
-    public function create(array $data): Complaint
+    public function create(array $data, User $filedBy): Complaint
     {
         return Complaint::create([
             ...$data,
-            'status' => ComplaintStatus::Open,
+            'status'  => ComplaintStatus::Open,
+            'user_id' => $filedBy->id,
         ]);
     }
 

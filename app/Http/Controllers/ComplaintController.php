@@ -20,6 +20,7 @@ class ComplaintController extends Controller
     public function index(): AnonymousResourceCollection
     {
         $complaints = Complaint::query()
+            ->with(['user', 'assignee'])
             ->latest('id')
             ->paginate(perPage: 15);
 
@@ -28,12 +29,15 @@ class ComplaintController extends Controller
 
     public function show(Complaint $complaint): ComplaintResource
     {
-        return new ComplaintResource($complaint);
+        return new ComplaintResource($complaint->load(['user', 'assignee']));
     }
 
     public function store(StoreComplaintRequest $request): JsonResponse
     {
-        $complaint = $this->complaints->create($request->validated());
+        $complaint = $this->complaints->create(
+            $request->validated(),
+            $request->user(),
+        );
 
         return (new ComplaintResource($complaint))
             ->response()
