@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\ComplaintStatus;
+use App\Events\ComplaintStatusChanged;
 use App\Models\Complaint;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
@@ -33,8 +34,12 @@ class ComplaintService
             ]);
         }
 
+        $oldStatus = $complaint->status;
+
         $complaint->status = $next;
         $complaint->save();
+
+        ComplaintStatusChanged::dispatch($complaint, $oldStatus, $next);
 
         return $complaint;
     }

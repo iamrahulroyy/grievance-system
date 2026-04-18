@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\ComplaintStatus;
 use App\Http\Requests\StoreComplaintRequest;
 use App\Http\Requests\UpdateComplaintStatusRequest;
+use App\Http\Resources\ActivityResource;
 use App\Http\Resources\ComplaintResource;
 use App\Models\Complaint;
 use App\Services\ComplaintService;
@@ -139,5 +140,22 @@ class ComplaintController extends Controller
         $complaint->update(['assigned_to' => $request->user()->id]);
 
         return new ComplaintResource($complaint->load(['user', 'assignee']));
+    }
+
+    /**
+     * View the audit trail for a complaint.
+     *
+     * Shows who did what and when — every create, status change, assignment, and delete is logged.
+     */
+    public function activity(Complaint $complaint): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+    {
+        Gate::authorize('view', $complaint);
+
+        $activities = $complaint->activities()
+            ->with('user')
+            ->latest()
+            ->paginate(perPage: 20);
+
+        return ActivityResource::collection($activities);
     }
 }
