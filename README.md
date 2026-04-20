@@ -173,3 +173,54 @@ tests/Feature/       AuthTest, ComplaintTest, CommentTest (34 tests)
 - **Queued notifications** — status change emails don't block the API response. Listener implements `ShouldQueue`, processed by the queue worker.
 - **Soft deletes** — complaints are never permanently lost. `SoftDeletes` trait adds `deleted_at` column, queries auto-exclude deleted rows.
 - **Local storage (swappable)** — attachments use Laravel's `Storage` facade with `local` disk. Production swap to `s3` is a one-word config change.
+- **Dual output layers** — same Models, Services, and Policies power both the JSON API (`/api/*`) and the Blade UI (`/dashboard`, `/complaints/*`). MVC in practice — only the View layer changes.
+
+## Roadmap
+
+### Phase 1 — Core Enhancements
+
+- [ ] **Department routing** — auto-route complaints to Water, Electricity, Roads departments based on category. Each department sees only their complaints.
+- [ ] **SLA tracking & escalation** — deadline per complaint (e.g., 72 hours). Auto-escalate to senior admin with alert email if overdue. Powered by Laravel scheduled commands.
+- [ ] **Public complaint tracking** — citizen enters complaint ID + phone number on a public page to check status without logging in. Like courier tracking.
+- [ ] **Dashboard analytics** — charts for complaints per week, average resolution time, top categories, busiest wards.
+- [ ] **Bulk status update** — admin selects multiple complaints and updates status in one action.
+
+### Phase 2 — Production Readiness
+
+- [ ] **API versioning** — `/api/v1/` prefix for backward compatibility.
+- [ ] **UUID primary keys** — replace sequential IDs to prevent information leakage.
+- [ ] **Full-text search** — replace `LIKE` queries with Meilisearch for instant, typo-tolerant search.
+- [ ] **S3 file storage** — swap `local` disk to `s3` for scalable cloud storage.
+- [ ] **Redis queue driver** — replace database queue with Redis for faster job processing.
+- [ ] **CI/CD pipeline** — GitHub Actions running `php artisan test` on every push, block merge on failure.
+
+### Phase 3 — Advanced Features
+
+- [ ] **Multi-language support (i18n)** — Hindi, Bengali, English. Laravel's built-in localization for complaint forms, emails, and UI.
+- [ ] **Webhook notifications** — POST to configured URLs on status change for third-party integrations.
+- [ ] **Granular admin permissions** — viewer (read-only), handler (assign + status), super-admin (everything). Permission matrix instead of single admin role.
+- [ ] **Complaint merging** — mark duplicates, merge into one, notify all affected citizens.
+- [ ] **Audit log export** — download complaint history as CSV/PDF for RTI (Right to Information) compliance.
+- [ ] **Certificate generation** — auto-generate resolution certificates (PDF) when a complaint is resolved, downloadable by the citizen as proof of resolution.
+
+## Certificate System (Planned)
+
+When a complaint is marked as `resolved`, the system will auto-generate a **Resolution Certificate** — a downloadable PDF that serves as official proof.
+
+**What the certificate includes:**
+- Complaint ID, title, and description
+- Citizen name and filing date
+- Admin who resolved it and resolution date
+- Status timeline (open → in_progress → resolved)
+- QR code linking to the complaint's public tracking page for verification
+- Official portal branding
+
+**Technical approach:**
+- Generate PDF using `barryvdh/laravel-dompdf` (HTML-to-PDF)
+- Certificate template as a Blade view (`resources/views/certificates/resolution.blade.php`)
+- Triggered automatically via the existing `ComplaintStatusChanged` event when status becomes `resolved`
+- Stored as an attachment on the complaint, downloadable via `GET /api/complaints/{id}/certificate`
+- QR code generated using `simplesoftwareio/simple-qrcode`
+
+**Why this matters for a government portal:**
+Citizens need documented proof that their complaint was addressed — for follow-ups, escalations, or RTI requests. A digital certificate with a verifiable QR code is the modern equivalent of an office stamp.
