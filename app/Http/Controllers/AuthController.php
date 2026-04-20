@@ -75,4 +75,16 @@ class AuthController extends Controller
     {
         return new UserResource($request->user());
     }
+
+    /**
+     * List all admin users.
+     *
+     * Useful for assigning complaints to a specific admin.
+     */
+    public function admins(): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+    {
+        $admins = User::where('role', \App\Enums\UserRole::Admin)->get();
+
+        return UserResource::collection($admins);
+    }
 }

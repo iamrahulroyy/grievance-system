@@ -33,7 +33,8 @@ class ComplaintStatusChangedNotification extends Notification implements ShouldQ
             ->greeting("Hello {$notifiable->name},")
             ->line("Your complaint \"{$this->complaint->title}\" has been updated.")
             ->line("**Status:** {$this->oldStatus->value} → **{$this->newStatus->value}**")
-            ->action('View Complaint', url("/api/complaints/{$this->complaint->id}"))
+            ->line("**Complaint ID:** #{$this->complaint->id}")
+            ->salutation('Regards, Grievance Portal')
             ->line('Thank you for using the Grievance Portal.');
     }
 }

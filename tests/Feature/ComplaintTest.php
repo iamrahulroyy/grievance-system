@@ -208,6 +208,31 @@ class ComplaintTest extends TestCase
             ->assertJsonPath('data.assigned_to', $this->admin->id);
     }
 
+    public function test_admin_can_assign_complaint_to_another_admin(): void
+    {
+        $otherAdmin = User::factory()->create(['role' => UserRole::Admin]);
+        $complaint = Complaint::factory()->for($this->citizen)->create();
+
+        $this->actingAs($this->admin)
+            ->postJson("/api/complaints/{$complaint->id}/assign", [
+                'admin_id' => $otherAdmin->id,
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.assigned_to', $otherAdmin->id);
+    }
+
+    public function test_assign_to_non_admin_is_rejected(): void
+    {
+        $complaint = Complaint::factory()->for($this->citizen)->create();
+
+        $this->actingAs($this->admin)
+            ->postJson("/api/complaints/{$complaint->id}/assign", [
+                'admin_id' => $this->citizen->id,
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['admin_id']);
+    }
+
     // ── Activity log ──────────────────────────────────────
 
     public function test_activity_is_logged_on_create(): void

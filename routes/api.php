@@ -28,6 +28,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me',      [AuthController::class, 'me']);
     });
 
+    Route::get('admins', [AuthController::class, 'admins']);
+
     Route::apiResource('complaints', ComplaintController::class);
     Route::post('complaints/{complaint}/assign', [ComplaintController::class, 'assign']);
     Route::get('complaints/{complaint}/activity', [ComplaintController::class, 'activity']);

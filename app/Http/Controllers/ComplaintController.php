@@ -131,13 +131,26 @@ class ComplaintController extends Controller
     }
 
     /**
-     * Admin assigns a complaint to themselves.
+     * Assign a complaint to an admin.
+     *
+     * Send `{"admin_id": 1}` to assign to a specific admin,
+     * or omit the body to assign to yourself.
      */
     public function assign(Request $request, Complaint $complaint): ComplaintResource
     {
         Gate::authorize('update', $complaint);
 
-        $complaint->update(['assigned_to' => $request->user()->id]);
+        $adminId = $request->input('admin_id', $request->user()->id);
+
+        $admin = \App\Models\User::findOrFail($adminId);
+
+        if (! $admin->isAdmin()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'admin_id' => 'The selected user is not an admin.',
+            ]);
+        }
+
+        $complaint->update(['assigned_to' => $admin->id]);
 
         return new ComplaintResource($complaint->load(['user', 'assignee']));
     }
